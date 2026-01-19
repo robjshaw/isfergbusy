@@ -6,7 +6,7 @@ builder = "nixpacks"
 
 [deploy]
 # Start the Next.js production server
-startCommand = "npx prisma db push --skip-generate && npm run start"
+startCommand = "echo 'Starting app...' && echo \"DATABASE_URL set: ${DATABASE_URL:+yes}\" && npx prisma db push --skip-generate --accept-data-loss && npm run start"
 healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
