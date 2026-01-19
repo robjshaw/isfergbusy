@@ -1,26 +1,470 @@
+/* Fergburger-inspired typography */
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Fergburger Color Palette */
+  --ferg-black: #0a0a0a;
+  --ferg-dark: #111111;
+  --ferg-gray-dark: #1a1a1a;
+  --ferg-gray: #2a2a2a;
+  --ferg-gray-light: #3a3a3a;
+  --ferg-white: #ffffff;
+  --ferg-off-white: #f5f5f5;
+
+  /* Accent - Ferg Cyan */
+  --ferg-cyan: #00c0f3;
+  --ferg-cyan-dark: #00a0d0;
+  --ferg-cyan-glow: rgba(0, 192, 243, 0.3);
+  --ferg-cyan-subtle: rgba(0, 192, 243, 0.1);
+
+  /* Status Colors - subtle variations */
+  --status-quiet: #00c0f3;
+  --status-moderate: #f0c000;
+  --status-busy: #ff6b35;
+  --status-heaving: #ff3366;
+
+  /* Text */
+  --text-primary: var(--ferg-white);
+  --text-secondary: #a0a0a0;
+  --text-muted: #666666;
+
+  /* Theme defaults */
+  --background: var(--ferg-black);
+  --foreground: var(--text-primary);
+
+  /* Fonts */
+  --font-heading: 'Libre Baskerville', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-heading);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+/* Serif headings - Fergburger style */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ferg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ferg-gray-light);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ferg-cyan);
+}
+
+/* Selection styling */
+::selection {
+  background: var(--ferg-cyan);
+  color: var(--ferg-black);
+}
+
+/* Ferg Cyan glow animation */
+@keyframes cyan-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--ferg-cyan-glow);
+  }
+  50% {
+    box-shadow: 0 0 40px var(--ferg-cyan-glow), 0 0 60px var(--ferg-cyan-subtle);
+  }
+}
+
+@keyframes subtle-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-cyan-pulse {
+  animation: cyan-pulse 2s ease-in-out infinite;
+}
+
+.animate-subtle-pulse {
+  animation: subtle-pulse 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--ferg-cyan-subtle) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Gradient text - Ferg style */
+.gradient-text {
+  background: linear-gradient(135deg, var(--ferg-white), var(--ferg-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.cyan-text {
+  color: var(--ferg-cyan);
+}
+
+/* Glassmorphism effects */
+.glass {
+  background: rgba(17, 17, 17, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-subtle {
+  background: rgba(17, 17, 17, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-heavy {
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-cyan {
+  background: rgba(0, 192, 243, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 192, 243, 0.2);
+}
+
+/* Card glass effect - sophisticated dark */
+.glass-card {
+  background: rgba(17, 17, 17, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Ferg border accent */
+.ferg-border {
+  border: 1px solid var(--ferg-gray);
+  transition: border-color 0.3s ease;
+}
+
+.ferg-border:hover {
+  border-color: var(--ferg-cyan);
+}
+
+/* Focus ring - cyan */
+:focus-visible {
+  outline: 2px solid var(--ferg-cyan);
+  outline-offset: 2px;
+}
+
+/* Link styling */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--ferg-cyan);
+}
+
+/* Button base */
+.btn-ferg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-ferg-primary {
+  background: var(--ferg-cyan);
+  color: var(--ferg-black);
+}
+
+.btn-ferg-primary:hover {
+  background: var(--ferg-white);
+  box-shadow: 0 0 30px var(--ferg-cyan-glow);
+}
+
+.btn-ferg-outline {
+  background: transparent;
+  color: var(--ferg-white);
+  border: 1px solid var(--ferg-white);
+}
+
+.btn-ferg-outline:hover {
+  border-color: var(--ferg-cyan);
+  color: var(--ferg-cyan);
+}
+
+/* Divider */
+.ferg-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--ferg-gray-light),
+    transparent
+  );
+}
+
+/* Prose styling for content pages */
+.prose {
+  max-width: 65ch;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+}
+
+.prose h1 {
+  font-size: 2.5rem;
+}
+
+.prose h2 {
+  font-size: 1.75rem;
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+}
+
+.prose p {
+  margin-bottom: 1em;
+  line-height: 1.8;
+}
+
+.prose a {
+  color: var(--ferg-cyan);
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}
+
+.prose strong {
+  color: var(--ferg-white);
+  font-weight: 600;
+}
+
+.prose code {
+  background: var(--ferg-gray-dark);
+  padding: 0.2em 0.4em;
+  border-radius: 2px;
+  font-size: 0.875em;
+  font-family: 'SF Mono', Monaco, monospace;
+  color: var(--ferg-cyan);
+}
+
+.prose pre {
+  background: var(--ferg-gray-dark);
+  padding: 1.5em;
+  border-radius: 0;
+  border-left: 2px solid var(--ferg-cyan);
+  overflow-x: auto;
+  margin: 1.5em 0;
+}
+
+.prose pre code {
+  background: none;
+  padding: 0;
+  color: var(--ferg-off-white);
+}
+
+.prose ul,
+.prose ol {
+  margin: 1em 0;
+  padding-left: 1.5em;
+}
+
+.prose li {
+  margin: 0.5em 0;
+}
+
+.prose blockquote {
+  border-left: 2px solid var(--ferg-cyan);
+  padding-left: 1.5em;
+  margin: 2em 0;
+  color: var(--text-secondary);
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 1.1em;
+}
+
+/* Number styling */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Uppercase tracking */
+.uppercase-wide {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* iOS Safe Areas */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+.safe-x {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.safe-y {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  html {
+    font-size: 15px;
+  }
+
+  .prose h1 {
+    font-size: 2rem;
+  }
+
+  .prose h2 {
+    font-size: 1.5rem;
+  }
+
+  /* Larger touch targets */
+  .btn-ferg {
+    min-height: 48px;
+    padding: 0.875rem 1.25rem;
+  }
+
+  /* Better tap highlighting */
+  a, button {
+    -webkit-tap-highlight-color: rgba(0, 192, 243, 0.2);
+  }
+}
+
+/* Smooth animations - respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) {
+  .ferg-border:hover {
+    border-color: var(--ferg-gray);
+  }
+
+  a:hover {
+    color: inherit;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .glass,
+  .glass-subtle,
+  .glass-heavy {
+    background: var(--ferg-dark);
+    border-width: 2px;
+  }
 }

@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Raw scraper snapshots
+model OrderSnapshot {
+  id          Int      @id @default(autoincrement())
+  capturedAt  DateTime @default(now())
+  readyOrders Int[]    // Array of order numbers currently displayed
+  minOrder    Int?     // Lowest order number
+  maxOrder    Int?     // Highest order number
+  orderCount  Int      // Count of orders shown
+  velocity    Float?   // Calculated orders/hour at capture time
+
+  @@index([capturedAt])
+}
+
+// Hourly aggregations for historical patterns
+model HourlyStat {
+  id              Int      @id @default(autoincrement())
+  hourStart       DateTime @unique
+  ordersCompleted Int      // Total orders that cycled through
+  avgVelocity     Float?   // Average velocity during hour
+  peakVelocity    Float?   // Peak velocity during hour
+  minVelocity     Float?   // Minimum velocity during hour
+  sampleCount     Int      // Number of snapshots in this hour
+
+  @@index([hourStart])
+}
+
+// Demand snapshots (pulled from PostHog)
+model DemandSnapshot {
+  id              Int      @id @default(autoincrement())
+  capturedAt      DateTime @default(now())
+  uniqueVisitors  Int      // Unique visitors in last 30 mins
+  pageViews       Int      // Page views in last 30 mins
+  activeNow       Int      // Currently active sessions (estimate)
+
+  @@index([capturedAt])
+}
+
+// Calculated Ferg Index history
+model FergIndexSnapshot {
+  id              Int      @id @default(autoincrement())
+  calculatedAt    DateTime @default(now())
+  indexValue      Int      // 0-100 composite score
+  status          String   // "ghost_town", "warming_up", "busy", "absolute_scenes"
+  velocityScore   Float    // Component scores
+  demandScore     Float
+  historicalScore Float
+  trendScore      Float
+  confidence      Float    // 0-1 confidence level
+
+  @@index([calculatedAt])
+}

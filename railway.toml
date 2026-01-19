@@ -1,0 +1,44 @@
+# Railway deployment configuration for IsFergBusy
+# https://docs.railway.app/reference/config-as-code
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+# Start the Next.js production server
+startCommand = "npm run db:push && npm run start"
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+# ==============================================
+# CRON JOB SETUP (Manual step required)
+# ==============================================
+#
+# After deploying, set up a cron job in Railway:
+# 1. Go to your project settings
+# 2. Add a new cron job service
+# 3. Configure:
+#    - Schedule: */3 * * * * (every 3 minutes)
+#    - Command: curl -X GET $RAILWAY_STATIC_URL/api/scrape -H "Authorization: Bearer $CRON_SECRET"
+#
+# Or use Railway's scheduled tasks feature if available.
+#
+# ==============================================
+# ENVIRONMENT VARIABLES
+# ==============================================
+#
+# Required (set in Railway dashboard):
+# - DATABASE_URL (auto-set when linking PostgreSQL)
+# - CRON_SECRET (generate with: openssl rand -hex 32)
+#
+# Optional (for PostHog analytics):
+# - NEXT_PUBLIC_POSTHOG_KEY
+# - NEXT_PUBLIC_POSTHOG_HOST
+# - POSTHOG_API_KEY
+# - POSTHOG_HOST
+# - POSTHOG_PROJECT_ID
+#
+# App settings:
+# - NEXT_PUBLIC_URL (set to your Railway domain)

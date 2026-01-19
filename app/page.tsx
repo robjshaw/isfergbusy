@@ -1,65 +1,249 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+
+import { Card, StatCard } from '@/components/ui/Card';
+import { FergIndexGauge } from '@/components/FergIndex/FergIndexGauge';
+import { StatusBadge } from '@/components/FergIndex/StatusBadge';
+import { ConfidenceIndicator } from '@/components/FergIndex/ConfidenceIndicator';
+import { DemandWarning } from '@/components/DemandPressure/DemandWarning';
+import { OrderGrid } from '@/components/OrderStatus/OrderGrid';
+import { VelocityChart } from '@/components/Charts/VelocityChart';
+import { SkeletonGauge, Skeleton } from '@/components/ui/Skeleton';
+import { Container } from '@/components/layout/Container';
+
+import { useFergIndex } from '@/hooks/useFergIndex';
+import { useOrderStatus } from '@/hooks/useOrderStatus';
+import { useLiveViewers } from '@/hooks/useLiveViewers';
+
+export default function HomePage() {
+  const { data: indexData, isLoading: indexLoading, isMock } = useFergIndex();
+  const {
+    readyOrders,
+    velocity,
+    completedLastHour,
+    lastUpdated,
+    isLoading: statsLoading,
+  } = useOrderStatus();
+  const { activeNow, last30Minutes } = useLiveViewers();
+
+  const [chartData, setChartData] = useState<{
+    raw: { time: string; velocity: number; visitors?: number }[];
+  } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/stats/chart')
+      .then((res) => res.json())
+      .then(setChartData)
+      .catch(console.error);
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="py-10 md:py-24 px-4 md:px-0">
+        <Container>
+          <motion.div
+            className="text-center mb-10 md:mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <h1 className="font-serif text-4xl md:text-7xl font-bold text-white mb-3 md:mb-4">
+              Is Ferg Busy?
+            </h1>
+            <p className="text-[#666666] text-base md:text-lg max-w-md mx-auto">
+              Real-time intelligence for Queenstown&apos;s legendary burger joint
+            </p>
+            {isMock && (
+              <p className="text-xs text-[#00c0f3] mt-3 md:mt-4 uppercase tracking-wider">
+                Demo Mode — No Database Connected
+              </p>
+            )}
+          </motion.div>
+
+          {/* Main Index Display */}
+          <motion.div
+            className="max-w-lg mx-auto"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Documentation
-          </a>
-        </div>
-      </main>
+            <Card variant="glass" className="p-6 md:p-12">
+              <div className="flex flex-col items-center text-center space-y-6 md:space-y-8">
+                {indexLoading ? (
+                  <SkeletonGauge />
+                ) : (
+                  <>
+                    <FergIndexGauge value={indexData?.index || 0} />
+
+                    <StatusBadge
+                      status={indexData?.status || 'ghost_town'}
+                      label={indexData?.label || 'Unknown'}
+                    />
+
+                    {indexData?.demandWarning && (
+                      <DemandWarning
+                        message={indexData.demandWarning}
+                        severity={indexData.index < 30 ? 'alert' : 'warning'}
+                        className="rounded-xl"
+                      />
+                    )}
+
+                    <ConfidenceIndicator
+                      confidence={indexData?.confidence || 0.5}
+                      className="w-full max-w-xs"
+                    />
+                  </>
+                )}
+              </div>
+            </Card>
+          </motion.div>
+        </Container>
+      </section>
+
+      {/* Divider */}
+      <div className="ferg-divider" />
+
+      {/* Stats Section */}
+      <section className="py-10 md:py-16 px-4 md:px-0">
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="font-serif text-xl md:text-2xl font-bold text-white mb-6 md:mb-8 text-center">
+              Live Statistics
+            </h2>
+
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+              <StatCard
+                label="Watching Now"
+                value={activeNow || '—'}
+                accent
+                className="p-4 md:p-6"
+              />
+              <StatCard
+                label="Orders/Hour"
+                value={statsLoading ? '—' : Math.round(velocity || 0)}
+                accent
+                className="p-4 md:p-6"
+              />
+              <StatCard
+                label="Completed (1hr)"
+                value={statsLoading ? '—' : completedLastHour || 0}
+                className="p-4 md:p-6"
+              />
+              <StatCard
+                label="Last Updated"
+                value={lastUpdated || 'Never'}
+                className="p-4 md:p-6"
+              />
+            </div>
+          </motion.div>
+        </Container>
+      </section>
+
+      {/* Orders Section */}
+      <section className="py-10 md:py-16 bg-[#0d0d0d] px-4 md:px-0">
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="flex items-center justify-between mb-6 md:mb-8">
+              <h2 className="font-serif text-xl md:text-2xl font-bold text-white">
+                Orders Ready
+              </h2>
+              <span className="uppercase-wide text-[#666666] text-[10px] md:text-xs">
+                Now serving
+              </span>
+            </div>
+
+            <Card variant="glass" className="p-4 md:p-8">
+              {statsLoading ? (
+                <div className="flex gap-3 md:gap-4 justify-center flex-wrap">
+                  {[...Array(6)].map((_, i) => (
+                    <Skeleton key={i} className="w-12 h-12 md:w-14 md:h-14 rounded-xl" />
+                  ))}
+                </div>
+              ) : (
+                <OrderGrid orders={readyOrders} />
+              )}
+            </Card>
+          </motion.div>
+        </Container>
+      </section>
+
+      {/* Chart Section */}
+      <section className="py-10 md:py-16 px-4 md:px-0">
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="flex items-center justify-between mb-6 md:mb-8">
+              <h2 className="font-serif text-xl md:text-2xl font-bold text-white">
+                24-Hour Trend
+              </h2>
+              <Link
+                href="/stats"
+                className="uppercase-wide text-[#00c0f3] hover:text-white transition-colors text-[10px] md:text-xs"
+              >
+                View All →
+              </Link>
+            </div>
+
+            <Card variant="glass" className="p-4 md:p-6 overflow-hidden">
+              {chartData?.raw && chartData.raw.length > 0 ? (
+                <VelocityChart data={chartData.raw} height={280} />
+              ) : (
+                <div className="h-[280px] flex items-center justify-center text-[#666666]">
+                  {chartData?.raw?.length === 0
+                    ? 'No data collected yet'
+                    : 'Loading chart...'}
+                </div>
+              )}
+            </Card>
+          </motion.div>
+        </Container>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-12 md:py-16 bg-[#0d0d0d] px-4 md:px-0">
+        <Container>
+          <motion.div
+            className="text-center max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="font-serif text-2xl md:text-3xl font-bold text-white mb-3 md:mb-4">
+              How Does This Work?
+            </h2>
+            <p className="text-[#a0a0a0] mb-6 md:mb-8 leading-relaxed text-sm md:text-base">
+              We track order velocity and site visitors to predict busyness.
+              The Ferg Index combines real-time data with historical patterns
+              to give you the full picture.
+            </p>
+            <Link
+              href="/how-it-works"
+              className="btn-ferg btn-ferg-outline inline-block"
+            >
+              Learn More
+            </Link>
+          </motion.div>
+        </Container>
+      </section>
     </div>
   );
 }
